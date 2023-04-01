@@ -1,0 +1,7 @@
+{% if error %}
+    <h2>Ошибка</h2>
+    <p>Меню <b>{{ menu_name }}</b> не найдено</p>
+{% else %}
+    <h2>Меню: {{ menu_name }}</h2>
+    {% include 'menu/fragments/generate_menu.html' %}
+{% endif %}

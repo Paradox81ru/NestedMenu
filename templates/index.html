@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %} Вложенное меню {% endblock %}
+
+{% load draw_menu %}
+
+{% block content %}
+    <h2><a href="{% url 'menu:main' %}">Меню</a></h2>
+
+{% endblock %}

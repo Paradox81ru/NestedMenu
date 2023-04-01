@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %} Вложенное меню {% endblock %}
+
+{% load draw_menu %}
+
+{% block content %}
+<div>
+{% draw_menu 'menu_1' %}
+</div>
+<div>
+{% draw_menu 'menu_2' %}
+</div>
+
+{% endblock %}

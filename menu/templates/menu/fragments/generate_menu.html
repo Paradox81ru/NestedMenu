@@ -1,0 +1,33 @@
+<ul>
+    {% for item in menu  %}
+
+        {% if 'current_item' in item %}
+            <li>
+                <span>{{ item.label }}</span>
+            </li>
+            {% if 'items' in item %}
+                <ul>
+                    {% for submenu in item.items %}
+                        <li>
+                            <a href="{{ submenu.url }}">
+                                {{ submenu.label }}
+                                {% if 'items' in submenu %}->{% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% elif item.is_show %}
+            <li>
+                <a href="{{ item.url }}">
+                    {{ item.label }}
+                    {% if 'items' in item and not item.items.0.is_show %}->{% endif %}
+                </a>
+            </li>
+        {% endif %}
+
+        {% if 'items' in item %}
+            {% include 'menu/fragments/generate_menu.html' with menu=item.items %}
+        {% endif %}
+    {% endfor %}
+</ul>
