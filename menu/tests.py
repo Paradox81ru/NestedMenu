@@ -5,6 +5,13 @@ from .models import Menu, MenuName
 
 class TestMenu(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        # При миграции базы данных уже создаётся тестовое меню,  на основании которого и происходит тестирование.
+        # В противном случае надо раскомментировать init_menu() для создания тестового меню.
+        # init_menu()
+        super().setUpClass()
+
     def test_save_menu(self):
         """
         Тестирует, чтобы при изменении Имени меню у одного подменю,
