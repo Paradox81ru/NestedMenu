@@ -16,14 +16,20 @@ class MenuName(models.Model):
 class Menu(models.Model):
     label = models.CharField("Метка", max_length=255)
     url = models.CharField("Ссылка", max_length=255)
-    menu = models.ForeignKey('self', null=True, on_delete=models.CASCADE, related_name='submenu', verbose_name='принадлежит пункту меню')
+    menu = models.ForeignKey('self', blank=True, null=True, on_delete=models.CASCADE, related_name='submenu', verbose_name='принадлежит пункту меню')
     menu_name = models.ForeignKey(MenuName, on_delete=models.CASCADE, verbose_name='наименование меню')
 
     class Meta:
         verbose_name = 'Меню'
         verbose_name_plural = 'Меню'
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None ):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        # При попытке сохранить в подменю самого себя или подменю которое принадлежит другому имени меню,
+        if (self.id is not None and self.id == self.menu_id) \
+                or (self.menu is not None and self.menu_name != self.menu.menu_name):
+        # if self.id is not None and self.id == self.menu_id:
+            # сохранение надо отменить.
+            return
         super().save(force_insert, force_update, using, update_fields)
         self.related_item_menu_name_save(self)
 

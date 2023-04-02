@@ -12,12 +12,13 @@ def draw_menu(context, menu_name):
     menu = Menu.objects.filter(menu_name__name=menu_name).values('id', 'label', 'url', 'menu_id')
     if len(menu) == 0:
         result['error'] = f'Меню {menu_name} не найдено'
-    struct_menu = _get_struct_menu(menu)
+    else:
+        struct_menu = _get_struct_menu(menu)
 
-    url_path = context['request'].path
-    url_path_begin = url_path[:url_path.rfind("/")]
-    _set_show_marker(struct_menu, url_path, url_path_begin)
-    result["menu"] = [struct_menu]
+        url_path = context['request'].path
+        url_path_begin = url_path[:url_path.rfind("/")]
+        _set_show_marker(struct_menu, url_path, url_path_begin)
+        result["menu"] = [struct_menu]
     return result
 
 
