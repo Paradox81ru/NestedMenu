@@ -1,9 +1,42 @@
+from typing import Final
+
 from django.test import TestCase
-from .helper import init_menu
+# from .helper import init_menu
 from .models import Menu, MenuName
+from .templatetags.draw_menu import _get_list_group_submenu, _get_struct_menu, _set_show_marker
 
 
 class TestMenu(TestCase):
+    MENU_LIST: Final = [
+        {'id': 1, 'label': 'Заголовок 1', 'url': '/label1', 'menu_id': None},
+        {'id': 2, 'label': 'Подзаголовок 11', 'url': '/sub-label1', 'menu_id': 1},
+        {'id': 3, 'label': 'Подзаголовок 12', 'url': '/sub-label2', 'menu_id': 1},
+        {'id': 4, 'label': 'Подзаголовок 13', 'url': '/sub-label3', 'menu_id': 1},
+        {'id': 5, 'label': 'Подзаголовок 131', 'url': '/sub-sub-label1', 'menu_id': 4},
+        {'id': 6, 'label': 'Подзаголовок 132', 'url': '/sub-sub-label2', 'menu_id': 4},
+        {'id': 7, 'label': 'Подзаголовок 1311', 'url': '/sub-sub-sub-label1', 'menu_id': 5},
+        {'id': 8, 'label': 'Подзаголовок 1312', 'url': '/sub-sub-sub-label2', 'menu_id': 5},
+        {'id': 9, 'label': 'Подзаголовок 1313', 'url': '/sub-sub-sub-label3', 'menu_id': 5},
+        {'id': 10, 'label': 'Подзаголовок 1314', 'url': '/sub-sub-sub-label4', 'menu_id': 5},
+        {'id': 11, 'label': 'Подзаголовок 14', 'url': '/sub-label4', 'menu_id': 1}]
+
+    STRUCT_MENU: Final = \
+        {'id': 1, 'label': 'Заголовок 1', 'url': '/menu/label1', 'menu_id': None, 'items': [
+            {'id': 2, 'label': 'Подзаголовок 11', 'url': '/menu/label1/sub-label1', 'menu_id': 1},
+            {'id': 3, 'label': 'Подзаголовок 12', 'url': '/menu/label1/sub-label2', 'menu_id': 1},
+            {'id': 4, 'label': 'Подзаголовок 13', 'url': '/menu/label1/sub-label3', 'menu_id': 1, 'items': [
+                {'id': 5, 'label': 'Подзаголовок 131', 'url': '/menu/label1/sub-label3/sub-sub-label1', 'menu_id': 4,
+                 'items': [
+                     {'id': 7, 'label': 'Подзаголовок 1311',
+                      'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label1', 'menu_id': 5},
+                     {'id': 8, 'label': 'Подзаголовок 1312',
+                      'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label2', 'menu_id': 5},
+                     {'id': 9, 'label': 'Подзаголовок 1313',
+                      'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label3', 'menu_id': 5},
+                     {'id': 10, 'label': 'Подзаголовок 1314',
+                      'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label4', 'menu_id': 5}]},
+                {'id': 6, 'label': 'Подзаголовок 132', 'url': '/menu/label1/sub-label3/sub-sub-label2', 'menu_id': 4}]},
+            {'id': 11, 'label': 'Подзаголовок 14', 'url': '/menu/label1/sub-label4', 'menu_id': 1}]}
 
     @classmethod
     def setUpClass(cls):
@@ -11,6 +44,48 @@ class TestMenu(TestCase):
         # В противном случае надо раскомментировать init_menu() для создания тестового меню.
         # init_menu()
         super().setUpClass()
+
+    def test_get_list_group_submenu(self):
+        """ Проверяет группировку списка подменю """
+        expected_group_list: Final = {
+            1: [{'id': 2, 'label': 'Подзаголовок 11', 'url': '/sub-label1', 'menu_id': 1},
+                {'id': 3, 'label': 'Подзаголовок 12', 'url': '/sub-label2', 'menu_id': 1},
+                {'id': 4, 'label': 'Подзаголовок 13', 'url': '/sub-label3', 'menu_id': 1},
+                {'id': 11, 'label': 'Подзаголовок 14', 'url': '/sub-label4', 'menu_id': 1}],
+            4: [{'id': 5, 'label': 'Подзаголовок 131', 'url': '/sub-sub-label1', 'menu_id': 4},
+                {'id': 6, 'label': 'Подзаголовок 132', 'url': '/sub-sub-label2', 'menu_id': 4}],
+            5: [{'id': 7, 'label': 'Подзаголовок 1311', 'url': '/sub-sub-sub-label1', 'menu_id': 5},
+                {'id': 8, 'label': 'Подзаголовок 1312', 'url': '/sub-sub-sub-label2', 'menu_id': 5},
+                {'id': 9, 'label': 'Подзаголовок 1313', 'url': '/sub-sub-sub-label3', 'menu_id': 5},
+                {'id': 10, 'label': 'Подзаголовок 1314', 'url': '/sub-sub-sub-label4', 'menu_id': 5}]
+        }
+        group_list = _get_list_group_submenu(self.MENU_LIST)
+        self.assertEqual(group_list, expected_group_list)
+
+    def test_get_struct_menu(self):
+        """ Проверяет формирование структурированного меню """
+        expected_struct_menu: Final = self.STRUCT_MENU
+        struct_menu = _get_struct_menu(self.MENU_LIST)
+        self.assertEqual(struct_menu, expected_struct_menu)
+
+    def test_set_show_marker(self):
+        struct_menu = dict(self.STRUCT_MENU)
+        url_path = "/menu/label1/sub-label1/sub-sub-label1/sub-sub-sub-label1"
+        url_begin_path = "/menu/label1/sub-label1/sub-sub-label1"
+        expected_marked_struct_menu: Final = \
+           {'id': 1, 'label': 'Заголовок 1', 'url': '/menu/label1', 'menu_id': None, 'items': [
+               {'id': 2, 'label': 'Подзаголовок 11', 'url': '/menu/label1/sub-label1', 'menu_id': 1, 'is_show': True},
+               {'id': 3, 'label': 'Подзаголовок 12', 'url': '/menu/label1/sub-label2', 'menu_id': 1, 'is_show': True},
+               {'id': 4, 'label': 'Подзаголовок 13', 'url': '/menu/label1/sub-label3', 'menu_id': 1, 'items': [
+                   {'id': 5, 'label': 'Подзаголовок 131', 'url': '/menu/label1/sub-label3/sub-sub-label1', 'menu_id': 4, 'items': [
+                       {'id': 7, 'label': 'Подзаголовок 1311', 'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label1', 'menu_id': 5},
+                       {'id': 8, 'label': 'Подзаголовок 1312', 'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label2', 'menu_id': 5},
+                       {'id': 9, 'label': 'Подзаголовок 1313', 'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label3', 'menu_id': 5},
+                       {'id': 10, 'label': 'Подзаголовок 1314', 'url': '/menu/label1/sub-label3/sub-sub-label1/sub-sub-sub-label4', 'menu_id': 5}], 'is_show': False},
+                   {'id': 6, 'label': 'Подзаголовок 132', 'url': '/menu/label1/sub-label3/sub-sub-label2', 'menu_id': 4, 'is_show': False}], 'is_show': True},
+               {'id': 11, 'label': 'Подзаголовок 14', 'url': '/menu/label1/sub-label4', 'menu_id': 1, 'is_show': True}], 'is_show': True}
+        _set_show_marker(struct_menu, url_path, url_begin_path)
+        self.assertEqual(struct_menu, expected_marked_struct_menu)
 
     def test_save_menu(self):
         """

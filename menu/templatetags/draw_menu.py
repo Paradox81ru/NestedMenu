@@ -71,7 +71,7 @@ def _get_list_group_submenu(menu: list):
 
         if item['menu_id'] is not None:
             if item['menu_id'] in list_group_submenu:
-                list_group_submenu[item['menu_id']].append(item)
+                list_group_submenu[item['menu_id']].append(dict(item))
             else:
-                list_group_submenu[item['menu_id']] = [item]
+                list_group_submenu[item['menu_id']] = [dict(item)]
     return list_group_submenu
